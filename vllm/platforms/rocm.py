@@ -329,7 +329,9 @@ class RocmPlatform(Platform):
     def check_and_update_config(cls, vllm_config: "VllmConfig") -> None:
         cache_config = vllm_config.cache_config
         if cache_config and cache_config.block_size is None:
-            cache_config.block_size = 16
+            # Navi (gfx11/12) benefits from 32-token KV blocks: fewer block
+            # lookups and better MFMA utilization on the custom paged-attn path.
+            cache_config.block_size = 32 if cls.is_navi() else 16
 
         parallel_config = vllm_config.parallel_config
         scheduler_config = vllm_config.scheduler_config

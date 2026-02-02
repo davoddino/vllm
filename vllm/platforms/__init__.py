@@ -206,6 +206,16 @@ builtin_platform_plugins = {
 def resolve_current_platform_cls_qualname() -> str:
     platform_plugins = load_plugins_by_group('vllm.platform_plugins')
 
+    # Fast-path override: if torch was built with HIP support, prefer ROCm.
+    # This avoids selecting CUDA just because NVML is present on mixed systems
+    # (common when an NVIDIA dGPU is installed but HIP GPUs are used).
+    try:
+        import torch
+        if getattr(torch.version, "hip", None):
+            return "vllm.platforms.rocm.RocmPlatform"
+    except Exception:
+        pass
+
     activated_plugins = []
 
     for name, func in chain(builtin_platform_plugins.items(),

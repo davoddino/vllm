@@ -3288,16 +3288,16 @@ void paged_attention_custom_launcher_navi(
 
   switch (gqa_ratio) {
     case 1:
-      LAUNCH_CUSTOM_ATTENTION_MFMA16(1);
+      LAUNCH_CUSTOM_ATTENTION_MFMA4(1);
       break;
     case 2:
-      LAUNCH_CUSTOM_ATTENTION_MFMA16(2);
+      LAUNCH_CUSTOM_ATTENTION_MFMA4(2);
       break;
     case 3:
-      LAUNCH_CUSTOM_ATTENTION_MFMA16(3);
+      LAUNCH_CUSTOM_ATTENTION_MFMA4(3);
       break;
     case 4:
-      LAUNCH_CUSTOM_ATTENTION_MFMA16(4);
+      LAUNCH_CUSTOM_ATTENTION_MFMA4(4);
       break;
     case 5:
       LAUNCH_CUSTOM_ATTENTION_MFMA16(5);
