@@ -148,13 +148,19 @@ def use_rocm_custom_paged_attention(
                          and envs.VLLM_ROCM_USE_AITER))
 
     else:
-        return (ON_GFX11_GFX12 and (not envs.VLLM_USE_V1 or sliding_window == 0
-                                    or sliding_window == (-1, -1))
+        # Navi (gfx11/12) custom paged attention kernels support more
+        # configurations than we currently allow. Broaden the guard so we
+        # actually dispatch to the optimized MFMA path on common models
+        # (e.g. Llama 7B with gqa=1 and explicit fp16 caches).
+        return (ON_GFX11_GFX12
+                and (not envs.VLLM_USE_V1 or sliding_window == 0
+                     or sliding_window == (-1, -1))
                 and (qtype == torch.half or qtype == torch.bfloat16)
-                and head_size == 128 and block_size == 16
-                and (gqa_ratio >= 3 and gqa_ratio <= 16)
-                and max_seq_len <= 128 * 1024 and alibi_slopes is None
-                and kv_cache_dtype == "auto"
+                and (head_size == 64 or head_size == 128)
+                and (block_size == 16 or block_size == 32)
+                and (1 <= gqa_ratio <= 16)
+                and max_seq_len <= 128 * 1024
+                and (not str(kv_cache_dtype).startswith("fp8"))
                 and envs.VLLM_ROCM_CUSTOM_PAGED_ATTN)
 
 
